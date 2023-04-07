@@ -1,0 +1,42 @@
+@startuml
+
+actor "User" as user
+
+'Aplikasi tidak dibuat hanya dengan menggunakan design pattern MVC saja
+'Melainkan menggunakan pattern lain seperti Repository dan Sevice pattern
+'Tujuannya agar kode lebih mudah dipelihara karena kemungkinan jika mau menggunakan MVC, kode pada Controller akan menjadi lebih kompleks karena harus menjadi sentral logic aplikasi
+'Dengan menggunakan patter Repository dan Service, kita dapat memecah tugas controller menjadi lebih mudah
+'Sehingga Controller hanya digunakan untuk menerima dan mengirim Req dari User
+'Lalu untuk Service digunakan sebagai pusat Logic aplikasi
+'Sedangkan Repository digunakan sebagai pusat Logic untuk Database
+
+node "PHP Login Management" {
+    node "Model" as model
+    node "Domain" as domain
+    node "Controller" as controller
+    node "View" as view
+    node "Service" as service
+    node "Repository" as repository
+}
+
+'Penjelasan Dari Tiap Node
+'Model: merepresentasikan data dan logic aplikasi pada level domain. Model biasanya terdiri dari berbagai entitas dan objek bisnis yang membentuk inti dari aplikasi. Dalam implementasi yang lebih kompleks, model juga bisa terdiri dari kelas-kelas utilitas dan helper.
+'Domain: merepresentasikan domain atau bisnis aplikasi, seperti keuangan, manajemen proyek, atau ecommerce. Domain merupakan kumpulan dari model, service, dan repository yang terkait dengan domain tersebut.
+'Controller: merepresentasikan logika kontrol aplikasi, yang bertanggung jawab untuk menerima input pengguna, memproses data, dan menghasilkan output yang sesuai. Controller biasanya mengakses service dan repository untuk memanipulasi data.
+'View: merepresentasikan tampilan aplikasi, yang menampilkan data dan interaksi kepada pengguna. View dapat berupa halaman web, form, atau elemen tampilan lainnya.
+'Service: merepresentasikan layer bisnis pada level aplikasi, yang bertanggung jawab untuk menjalankan logika bisnis kompleks dan memproses data dari repository. Service biasanya diakses oleh controller atau lapisan lain pada aplikasi.
+'Repository: merepresentasikan layer data pada level aplikasi, yang bertanggung jawab untuk mengakses data dari sumber data (database, file, API, dll). Repository menyediakan interface untuk mengakses data, yang digunakan oleh service atau controller.
+
+database "MySQL" as mysql
+
+user --> controller : 1
+controller --> model : 2
+controller --> service : 3
+service --> repository : 4
+repository --> domain : 5
+repository --> mysql : 6
+controller --> view : 7
+controller --> user : 8
+
+
+@enduml
