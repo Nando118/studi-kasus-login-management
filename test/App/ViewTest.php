@@ -13,6 +13,6 @@ class ViewTest extends TestCase
             'title' => 'PHP Login Management'
         ]);
 
-        $this->expectOutputRegex('[Register]');
+        $this->expectOutputRegex('[Registers]');
     }
 }
