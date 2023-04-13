@@ -66,7 +66,8 @@ class UserService
 
         $user = $this->userRepository->findById($request->id);
         if ($user == null) {
-            throw new ValidationException("Id or password is wrong");
+//            throw new ValidationException("Id or password is wrong");
+            throw new ValidationException("User not found!");
         }
 
         if (password_verify($request->password, $user->password)){

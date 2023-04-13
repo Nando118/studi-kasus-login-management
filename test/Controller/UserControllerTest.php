@@ -1,7 +1,8 @@
 <?php
 
 namespace Nando118\StudiKasus\PHP\LoginManagement\App {
-    function header(string $value) {
+    function header(string $value)
+    {
         echo $value;
     }
 }
@@ -47,7 +48,7 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
 
             $this->userController->postRegister();
 
-            $this->expectOutputRegex("[Location: users/login]");
+            $this->expectOutputRegex("[Location: /users/login]");
         }
 
         public function testPostRegisterValidationError()
@@ -85,6 +86,74 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
             $this->expectOutputRegex("[Name]");
             $this->expectOutputRegex("[Password]");
             $this->expectOutputRegex("[User Id already exists]");
+        }
+
+        public function testLogin()
+        {
+            $this->userController->Login();
+
+            $this->expectOutputRegex("[Sign On]");
+        }
+
+        public function testLoginSucess()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $_POST['id'] = 'nando';
+            $_POST['password'] = 'nando';
+
+            $this->userController->postLogin();
+
+            $this->expectOutputRegex("[Location: /]");
+        }
+
+        public function testLoginValidateError()
+        {
+            $_POST['id'] = 'nando';
+            $_POST['password'] = '';
+
+            $this->userController->postLogin();
+
+            $this->expectOutputRegex("[Id, Password can not blank]");
+        }
+
+        public function testLoginUserNotFound()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $_POST['id'] = 'asd';
+            $_POST['password'] = 'asd';
+
+            $this->userController->postLogin();
+
+            $this->expectOutputRegex("[User not found!]");
+        }
+
+        public function testLoginWrongPassword()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $_POST['id'] = 'nando';
+            $_POST['password'] = 'asd';
+
+            $this->userController->postLogin();
+
+            $this->expectOutputRegex("[Id or password is wrong]");
         }
     }
 }
