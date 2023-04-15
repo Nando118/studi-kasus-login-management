@@ -4,16 +4,28 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Repository;
 
 use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
 use Nando118\StudiKasus\PHP\LoginManagement\Domain\Session;
+use Nando118\StudiKasus\PHP\LoginManagement\Domain\User;
 use PHPUnit\Framework\TestCase;
 
 class SessionRepositoryTest extends TestCase
 {
     private SessionRepository $sessionRepository;
+    private UserRepository $userRepository;
 
     protected function setUp(): void
     {
         $this->sessionRepository = new SessionRepository(Database::getConnection());
+        $this->userRepository = new UserRepository(Database::getConnection());
+
         $this->sessionRepository->deleteAll();
+        $this->userRepository->deleteAll();
+
+        $user = new User();
+        $user->id = 'nando';
+        $user->name = 'nando';
+        $user->password = 'nando';
+
+        $this->userRepository->save($user);
     }
 
     public function testSaveSuccess()
