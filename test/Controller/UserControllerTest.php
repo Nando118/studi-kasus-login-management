@@ -7,21 +7,35 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\App {
     }
 }
 
+namespace Nando118\StudiKasus\PHP\LoginManagement\Service {
+    function setcookie(string $name, string $value)
+    {
+        echo "$name : $value";
+    }
+}
+
 namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
 
     use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
+    use Nando118\StudiKasus\PHP\LoginManagement\Domain\Session;
     use Nando118\StudiKasus\PHP\LoginManagement\Domain\User;
+    use Nando118\StudiKasus\PHP\LoginManagement\Repository\SessionRepository;
     use Nando118\StudiKasus\PHP\LoginManagement\Repository\UserRepository;
+    use Nando118\StudiKasus\PHP\LoginManagement\Service\SessionService;
     use PHPUnit\Framework\TestCase;
 
     class UserControllerTest extends TestCase
     {
         private UserController $userController;
         private UserRepository $userRepository;
+        private SessionRepository $sessionRepository;
 
         protected function setUp(): void
         {
             $this->userController = new UserController();
+
+            $this->sessionRepository = new SessionRepository(Database::getConnection());
+            $this->sessionRepository->deleteAll();
 
             $this->userRepository = new UserRepository(Database::getConnection());
             $this->userRepository->deleteAll();
@@ -109,7 +123,7 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
 
             $this->userController->postLogin();
 
-            $this->expectOutputRegex("[Location: /]");
+            $this->expectOutputRegex("[S-LOGIN-MANAGEMENT-SESSION : ]");
         }
 
         public function testLoginValidateError()
@@ -154,6 +168,28 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
             $this->userController->postLogin();
 
             $this->expectOutputRegex("[Id or password is wrong]");
+        }
+
+        public function testLogout()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $this->userController->logout();
+
+            $this->expectOutputRegex("[Location: /]");
+            $this->expectOutputRegex("[S-LOGIN-MANAGEMENT-SESSION : ]");
         }
     }
 }

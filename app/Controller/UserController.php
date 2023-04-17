@@ -7,18 +7,24 @@ use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
 use Nando118\StudiKasus\PHP\LoginManagement\Exception\ValidationException;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserLoginRequest;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserRegisterRequest;
+use Nando118\StudiKasus\PHP\LoginManagement\Repository\SessionRepository;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\UserRepository;
+use Nando118\StudiKasus\PHP\LoginManagement\Service\SessionService;
 use Nando118\StudiKasus\PHP\LoginManagement\Service\UserService;
 
 class UserController
 {
     private UserService $userService;
+    private SessionService $sessionService;
 
     public function __construct()
     {
         $connection = Database::getConnection();
         $userRepository = new UserRepository($connection);
         $this->userService = new UserService($userRepository);
+
+        $sessionRepository = new SessionRepository($connection);
+        $this->sessionService = new SessionService($sessionRepository, $userRepository);
     }
 
 
@@ -49,7 +55,7 @@ class UserController
 
     public function login()
     {
-        View::render('User/login',[
+        View::render('User/login', [
             "title" => "Login User"
         ]);
     }
@@ -61,7 +67,10 @@ class UserController
         $request->password = $_POST['password'];
 
         try {
-            $this->userService->login($request);
+            $response = $this->userService->login($request);
+
+            $this->sessionService->create($response->user->id);
+
             View::redirect('/');
         } catch (ValidationException $exception) {
             View::render('User/login', [
@@ -69,5 +78,11 @@ class UserController
                 'error' => $exception->getMessage()
             ]);
         }
+    }
+
+    public function logout()
+    {
+        $this->sessionService->destroy();
+        View::redirect('/');
     }
 }
