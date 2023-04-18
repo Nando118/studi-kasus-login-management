@@ -30,13 +30,13 @@ class UserRepository
         $statement->execute([$id]);
 
         try {
-            if ($row = $statement->fetch()){
+            if ($row = $statement->fetch()) {
                 $user = new User();
                 $user->id = $row['id'];
                 $user->name = $row['name'];
                 $user->password = $row['password'];
                 return $user;
-            }else{
+            } else {
                 return null;
             }
         } finally {
@@ -44,7 +44,18 @@ class UserRepository
         }
     }
 
-    public function deleteAll(): void {
+    public function deleteAll(): void
+    {
         $this->connection->exec("DELETE FROM users");
+    }
+
+    public function update(User $user): User
+    {
+        $statement = $this->connection->prepare("UPDATE users SET name = ?, password = ? WHERE id = ?");
+        $statement->bindParam(1, $user->name);
+        $statement->bindParam(2, $user->password);
+        $statement->bindParam(3, $user->id);
+        $statement->execute();
+        return $user;
     }
 }
