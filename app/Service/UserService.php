@@ -8,6 +8,8 @@ use Nando118\StudiKasus\PHP\LoginManagement\Domain\User;
 use Nando118\StudiKasus\PHP\LoginManagement\Exception\ValidationException;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserLoginRequest;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserLoginResponse;
+use Nando118\StudiKasus\PHP\LoginManagement\Model\UserProfileUpdateRequest;
+use Nando118\StudiKasus\PHP\LoginManagement\Model\UserProfileUpdateResponse;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserRegisterRequest;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserRegisterResponse;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\UserRepository;
@@ -70,11 +72,11 @@ class UserService
             throw new ValidationException("User not found!");
         }
 
-        if (password_verify($request->password, $user->password)){
+        if (password_verify($request->password, $user->password)) {
             $response = new UserLoginResponse();
             $response->user = $user;
             return $response;
-        }else{
+        } else {
             throw new ValidationException("Id or password is wrong");
         }
     }
@@ -84,6 +86,42 @@ class UserService
         if ($request->id == null || $request->password == null
             || trim($request->id) == "" || trim($request->password) == "") {
             throw new ValidationException("Id, Password can not blank");
+        }
+    }
+
+    public function updateProfile(UserProfileUpdateRequest $request): UserProfileUpdateResponse
+    {
+        $this->validateUserProfileUpdateRequest($request);
+
+        try {
+
+            Database::beginTransaction();
+
+            $user = $this->userRepository->findById($request->id);
+
+            if ($user == null) {
+                throw new ValidationException("User is not found");
+            }
+
+            $user->name = $request->name;
+            $this->userRepository->update($user);
+
+            Database::commitTransaction();
+
+            $response = new UserProfileUpdateResponse();
+            $response->user = $user;
+            return $response;
+        } catch (\Exception $exception) {
+            Database::rollBackTransaction();
+            throw $exception;
+        }
+    }
+
+    private function validateUserProfileUpdateRequest(UserProfileUpdateRequest $request)
+    {
+        if ($request->id == null || $request->name == null
+            || trim($request->id) == "" || trim($request->name) == "") {
+            throw new ValidationException("Id, Name can not blank");
         }
     }
 }
