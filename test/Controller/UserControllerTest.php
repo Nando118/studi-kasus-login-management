@@ -191,5 +191,73 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
             $this->expectOutputRegex("[Location: /]");
             $this->expectOutputRegex("[S-LOGIN-MANAGEMENT-SESSION : ]");
         }
+
+        public function testUpdateProfile()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $this->userController->updateProfile();
+
+            $this->expectOutputRegex("[nando]");
+        }
+
+        public function testPostUpdateProfileSuccess()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $_POST['name'] = "Fernando";
+            $this->userController->postUpdateProfile();
+
+            $this->expectOutputRegex("[Location: /]");
+
+            $result = $this->userRepository->findById("nando");
+            self::assertEquals("Fernando", $result->name);
+        }
+
+        public function testPostUpdateProfileValidationError()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $_POST['name'] = "";
+            $this->userController->postUpdateProfile();
+
+            $this->expectOutputRegex("[Id, Name can not blank]");
+        }
     }
 }

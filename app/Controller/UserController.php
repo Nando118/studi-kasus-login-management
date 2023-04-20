@@ -6,6 +6,7 @@ use Nando118\StudiKasus\PHP\LoginManagement\App\View;
 use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
 use Nando118\StudiKasus\PHP\LoginManagement\Exception\ValidationException;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserLoginRequest;
+use Nando118\StudiKasus\PHP\LoginManagement\Model\UserProfileUpdateRequest;
 use Nando118\StudiKasus\PHP\LoginManagement\Model\UserRegisterRequest;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\SessionRepository;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\UserRepository;
@@ -84,5 +85,41 @@ class UserController
     {
         $this->sessionService->destroy();
         View::redirect('/');
+    }
+
+    public function updateProfile()
+    {
+        $user = $this->sessionService->current();
+
+        View::render('User/profile', [
+            'title' => 'Update user profile',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name
+            ]
+        ]);
+    }
+
+    public function postUpdateProfile()
+    {
+        $user = $this->sessionService->current();
+
+        $request = new UserProfileUpdateRequest();
+        $request->id = $user->id;
+        $request->name = $_POST['name'];
+
+        try {
+            $this->userService->updateProfile($request);
+            View::redirect('/');
+        } catch (ValidationException $exception) {
+            View::render('User/profile', [
+                'title' => 'Update user profile',
+                'error' => $exception->getMessage(),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $_POST['name']
+                ]
+            ]);
+        }
     }
 }
