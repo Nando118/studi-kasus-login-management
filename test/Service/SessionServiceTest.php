@@ -1,19 +1,14 @@
 <?php
 
 namespace Nando118\StudiKasus\PHP\LoginManagement\Service;
+require_once __DIR__ . "/../Helper/helper.php";
 
-use http\Exception;
 use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
 use Nando118\StudiKasus\PHP\LoginManagement\Domain\Session;
 use Nando118\StudiKasus\PHP\LoginManagement\Domain\User;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\SessionRepository;
 use Nando118\StudiKasus\PHP\LoginManagement\Repository\UserRepository;
 use PHPUnit\Framework\TestCase;
-
-function setcookie(string $name, string $value)
-{
-    echo "$name : $value";
-}
 
 class SessionServiceTest extends TestCase
 {

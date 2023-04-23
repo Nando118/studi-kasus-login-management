@@ -1,13 +1,7 @@
 <?php
 
-namespace Nando118\StudiKasus\PHP\LoginManagement\App {
-    function header(string $value)
-    {
-        echo $value;
-    }
-}
-
 namespace Nando118\StudiKasus\PHP\LoginManagement\Middleware {
+    require_once __DIR__ . "/../Helper/helper.php";
 
     use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
     use Nando118\StudiKasus\PHP\LoginManagement\Domain\Session;

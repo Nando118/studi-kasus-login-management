@@ -1,20 +1,7 @@
 <?php
 
-namespace Nando118\StudiKasus\PHP\LoginManagement\App {
-    function header(string $value)
-    {
-        echo $value;
-    }
-}
-
-namespace Nando118\StudiKasus\PHP\LoginManagement\Service {
-    function setcookie(string $name, string $value)
-    {
-        echo "$name : $value";
-    }
-}
-
 namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
+    require_once __DIR__ . "/../Helper/helper.php";
 
     use Nando118\StudiKasus\PHP\LoginManagement\Config\Database;
     use Nando118\StudiKasus\PHP\LoginManagement\Domain\Session;
@@ -259,5 +246,101 @@ namespace Nando118\StudiKasus\PHP\LoginManagement\Controller {
 
             $this->expectOutputRegex("[Id, Name can not blank]");
         }
+
+        public function testUpdatePassword()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $this->userController->updatePassword();
+
+            $this->expectOutputRegex("[Change Password]");
+        }
+
+        public function testUpdatePasswordSuccess()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $_POST['oldPassword'] = "nando";
+            $_POST['newPassword'] = "baru";
+            $this->userController->postUpdatePassword();
+
+            $this->expectOutputRegex("[Location: /]");
+
+            $result = $this->userRepository->findById($user->id);
+
+            self::assertTrue(password_verify("baru", $result->password));
+        }
+
+        public function testUpdatePasswordValidationError()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $_POST['oldPassword'] = "";
+            $_POST['newPassword'] = "";
+            $this->userController->postUpdatePassword();
+
+            $this->expectOutputRegex("[Id, Old Password, New Password can not blank]");
+        }
+
+        public function testWrongOldPassword()
+        {
+            $user = new User();
+            $user->id = 'nando';
+            $user->name = 'Nando';
+            $user->password = password_hash('nando', PASSWORD_BCRYPT);
+
+            $this->userRepository->save($user);
+
+            $session = new Session();
+            $session->id = uniqid();
+            $session->userId = $user->id;
+            $this->sessionRepository->save($session);
+
+            $_COOKIE[SessionService::$COOKIE_NAME] = $session->id;
+
+            $_POST['oldPassword'] = "salah";
+            $_POST['newPassword'] = "budi";
+            $this->userController->postUpdatePassword();
+
+            $this->expectOutputRegex("[Old password is wrong]");
+        }
+
+
     }
 }
